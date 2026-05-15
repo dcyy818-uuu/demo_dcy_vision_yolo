@@ -5,13 +5,15 @@ from pathlib import Path
 
 ROOT = Path(r"D:\RM_YOLO")
 SRC = ROOT / "label_work"
-OUT = ROOT / "datasets" / "armor"
+OUT = ROOT / "dataset"
 
 VAL_RATIO = 0.2
 RANDOM_SEED = 42
 
 IMG_EXTS = [".jpg", ".jpeg", ".png", ".bmp"]
 
+CLASS_NAMES = ["blue3", "blue1", "bluesb", "red3", "red1", "redsb"]
+CLASS_TO_ID = {name: i for i, name in enumerate(CLASS_NAMES)}
 def find_image(json_path, data):
     image_path = data.get("imagePath", "")
 
@@ -67,39 +69,30 @@ def convert_one_json_to_yolo(data, txt_path, class_to_id):
     txt_path.write_text("\n".join(lines), encoding="utf-8")
 
 def main():
-    json_files = sorted(SRC.glob("*.json"))
+    image_files = sorted(
+        p for p in SRC.iterdir()
+        if p.is_file() and p.suffix.lower() in IMG_EXTS
+    )
 
-    if not json_files:
-        raise RuntimeError(f"没有在 {SRC} 找到 json 文件")
+    if not image_files:
+        raise RuntimeError(f"没有在 {SRC} 找到图片文件")
 
     samples = []
-    label_set = set()
 
-    for json_path in json_files:
-        data = json.loads(json_path.read_text(encoding="utf-8"))
-        img_path = find_image(json_path, data)
+    for img_path in image_files:
+        json_path = SRC / f"{img_path.stem}.json"
 
-        if img_path is None:
-            print(f"跳过：找不到 {json_path.name} 对应的图片")
-            continue
-
-        for shape in data.get("shapes", []):
-            if shape.get("shape_type") == "rectangle":
-                label_set.add(shape["label"])
-
-        samples.append((json_path, img_path, data))
+        if json_path.exists():
+            data = json.loads(json_path.read_text(encoding="utf-8"))
+            samples.append((json_path, img_path, data))
+        else:
+            print(f"跳过未标注图片：{img_path.name}")
 
     if not samples:
         raise RuntimeError("没有找到有效的图片和 JSON 标注")
 
-    if not label_set:
-        raise RuntimeError("JSON 里面没有找到任何 rectangle 标注")
-
-    class_names = sorted(label_set)
-    class_to_id = {name: i for i, name in enumerate(class_names)}
-
-    print("检测到的类别：")
-    for name, idx in class_to_id.items():
+    print("使用固定类别：")
+    for idx, name in enumerate(CLASS_NAMES):
         print(f"{idx}: {name}")
 
     if OUT.exists():
@@ -122,7 +115,11 @@ def main():
             dst_txt = OUT / "labels" / split / f"{img_path.stem}.txt"
 
             shutil.copy2(img_path, dst_img)
-            convert_one_json_to_yolo(data, dst_txt, class_to_id)
+
+            if data is None:
+                dst_txt.write_text("", encoding="utf-8")
+            else:
+                convert_one_json_to_yolo(data, dst_txt, CLASS_TO_ID)
 
     process(train_samples, "train")
     process(val_samples, "val")
@@ -134,12 +131,12 @@ val: images/val
 names:
 """
 
-    for i, name in enumerate(class_names):
+    for i, name in enumerate(CLASS_NAMES):
         yaml_text += f"  {i}: {name}\n"
 
-    (OUT / "armor.yaml").write_text(yaml_text, encoding="utf-8")
+    (OUT / "data.yaml").write_text(yaml_text, encoding="utf-8")
 
-    class_map_text = json.dumps(class_to_id, ensure_ascii=False, indent=2)
+    class_map_text = json.dumps(CLASS_TO_ID, ensure_ascii=False, indent=2)
     (OUT / "class_map.json").write_text(class_map_text, encoding="utf-8")
 
     print()
@@ -147,7 +144,7 @@ names:
     print(f"训练集数量: {len(train_samples)}")
     print(f"验证集数量: {len(val_samples)}")
     print(f"输出位置: {OUT}")
-    print(f"配置文件: {OUT / 'armor.yaml'}")
+    print(f"配置文件: {OUT / 'data.yaml'}")
 
 if __name__ == "__main__":
     main()
