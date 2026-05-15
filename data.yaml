@@ -1,5 +1,13 @@
-path:D:/RM_YOLOV5/dataset
-train:images/train
-val:images/val
+path: D:/RM_YOLO/dataset
+train: images/train
+val: images/val
 
+
+names:
+  0: blue3
+  1: blue1
+  2: bluesb
+  3: red3
+  4: red1
+  5: redsb
 
