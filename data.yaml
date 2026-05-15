@@ -1,0 +1,5 @@
+path:D:/RM_YOLOV5/dataset
+train:images/train
+val:images/val
+
+
