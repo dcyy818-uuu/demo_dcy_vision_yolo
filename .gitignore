@@ -22,3 +22,9 @@ runs/detect/val*/
 yolo11n.pt
 yolo11s.pt
 yolo26n.pt
+
+# optional local files
+*.engine
+yolo_convert_engine.py
+classes.txt
+scripts/

@@ -19,11 +19,7 @@
 
 ## 数据处理
 
-原始标注是 LabelMe 的 JSON 文件，使用下面的脚本转成 YOLO detection 格式：
-
-```text
-scripts/json_to_yolo_split.py
-```
+原始标注是 LabelMe 的 JSON 文件，训练前已经转换为 YOLO detection 格式。
 
 转换后的数据集结构如下：
 
@@ -132,54 +128,12 @@ conda run -n rm_yolo python yolo_convert.py
 runs/detect/rm_armor_yolo11s/weights/best.onnx
 ```
 
-## TensorRT Engine 导出
-
-除了 ONNX 格式，当前也额外导出了 TensorRT `.engine` 格式，用于在 Nvidia GPU 上进行更高效的推理。该格式依赖具体的 Nvidia GPU、CUDA 和 TensorRT 环境，适合后续实际部署场景。
-
-导出脚本：
-
-```text
-yolo_convert_engine.py
-```
-
-导出环境：
-
-```text
-GPU: NVIDIA GeForce RTX 4060 Laptop GPU
-TensorRT: 10.16.1.11
-input size: 640
-precision: FP32
-```
-
-导出命令：
-
-```powershell
-conda run -n rm_yolo python yolo_convert_engine.py
-```
-
-如果显卡和 TensorRT 版本支持 FP16，也可以尝试开启半精度导出：
-
-```powershell
-conda run -n rm_yolo yolo export model=runs/detect/rm_armor_yolo11s/weights/best.pt format=engine imgsz=640 device=0 half=True
-```
-
-导出的模型：
-
-```text
-runs/detect/rm_armor_yolo11s/weights/best.engine
-rm_armor_yolo11s_best.engine
-```
-
-当前仓库保留了 `.pt`、`.onnx` 与 `.engine` 三种模型格式。
-
 ## 文件说明
 
 ```text
 data.yaml                      数据集配置
 yolo_train.py                  训练脚本
 yolo_convert.py                ONNX 导出脚本
-yolo_convert_engine.py         TensorRT Engine 导出脚本
-scripts/json_to_yolo_split.py  JSON 标注转 YOLO 标签
 runs/detect/rm_armor_yolo11s   正式训练日志、图表和权重
 ```
 
