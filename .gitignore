@@ -18,6 +18,7 @@ __pycache__/
 
 # training artifacts
 runs/detect/runs/
+runs/detect/val*/
 yolo11n.pt
 yolo11s.pt
 yolo26n.pt
