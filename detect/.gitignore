@@ -1,0 +1,9 @@
+build/
+cmake-build-*/
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+assets/log/
+.cache/

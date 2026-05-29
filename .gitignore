@@ -28,3 +28,22 @@ yolo26n.pt
 yolo_convert_engine.py
 classes.txt
 scripts/
+
+# IDE
+.vscode/
+
+# third-party dependencies
+detect/third_party/
+
+# local build outputs
+detect/build/
+
+# temporary ONNX export experiments
+rm_armor_yolo11s_best_opencv.onnx
+rm_armor_yolo11s_best_opencv_opset11.onnx
+
+# local test videos
+detect/assets/*.mp4
+detect/assets/*.avi
+detect/assets/*.mov
+detect/assets/*.mkv
